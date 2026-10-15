@@ -1,6 +1,6 @@
 """Build an animated Blender scene and GLB from irie-vibes-peeking.obj.
 
-Run: blender --background --python build_mascot.py
+Run from repository root: blender --background --python blender/scripts/build_mascot.py
 """
 
 from pathlib import Path
@@ -10,10 +10,16 @@ import bpy
 from mathutils import Matrix, Vector
 
 
-HERE = Path(__file__).resolve().parent
-SOURCE = HERE / "irie-vibes-peeking.obj"
-BLEND = HERE / "irie-vibes-animated.blend"
-GLB = HERE / "irie-vibes-animated.glb"
+REPO_ROOT = Path(__file__).resolve().parents[2]
+SOURCE = REPO_ROOT / "assets/models/source/irie-vibes-peeking.obj"
+BLEND = REPO_ROOT / "blender/projects/irie-vibes-animated.blend"
+GLB = REPO_ROOT / "assets/models/exports/irie-vibes-animated.glb"
+FRAME_SCALE = 2  # Double the authored frame spacing; 28 fps makes each beat 70 BPM.
+FPS = 28
+
+
+def dance_frame(frame):
+    return (frame - 1) * FRAME_SCALE
 
 def imported_axes(point):
     """Map original OBJ X/Y/Z to the importer's Blender X/Y/Z."""
@@ -43,7 +49,7 @@ def animate(obj, path, values):
         if path == "location":
             value = imported_axes(value)
         setattr(obj, path, value)
-        obj.keyframe_insert(data_path=path, frame=frame)
+        obj.keyframe_insert(data_path=path, frame=dance_frame(frame))
 
 
 def radians(values):
@@ -58,7 +64,7 @@ def aim(obj, point):
 def tube(name, points, radius, mat):
     curve = bpy.data.curves.new(name, "CURVE")
     curve.dimensions = "3D"
-    curve.resolution_u = 24
+    curve.resolution_u = 48
     curve.bevel_depth = radius
     curve.bevel_resolution = 4
     spline = curve.splines.new("BEZIER")
@@ -107,11 +113,11 @@ for name in ("arm_left", "arm_right", "leg_left", "leg_right"):
 parts["arm_left"] = tube("arm_left", [
     (-0.51, 0.76, 0.12), (-0.62, 0.77, 0.02), (-0.67, 0.86, -0.07),
     (-0.62, 0.89, -0.08),
-], 0.029, palette["dark_brown"])
+], 0.034, palette["dark_brown"])
 parts["arm_right"] = tube("arm_right", [
     (0.30, 0.73, -0.12), (0.38, 0.70, 0.07), (0.51, 0.70, 0.17),
     (0.58, 0.83, 0.22),
-], 0.029, palette["dark_brown"])
+], 0.034, palette["dark_brown"])
 parts["leg_left"] = tube("leg_left", [
     (-0.28, 0.31, -0.02), (-0.31, 0.22, -0.06), (-0.32, 0.13, -0.08),
 ], 0.034, palette["dark_brown"])
@@ -160,7 +166,7 @@ for name, obj in parts.items():
         parent = right_foot
     attach(obj, parent)
 
-# Four-second loop at 24 fps: alternating hip accents every 12 frames (120 BPM).
+# Eight-beat loop at 70 BPM: alternating hip accents every 24 frames.
 animate(root, "location", [(1, (0, 0, 0)), (25, (0, 0.025, 0)),
                            (49, (0, 0, 0)), (73, (0, -0.014, 0)), (97, (0, 0, 0))])
 animate(root, "rotation_euler", [
@@ -169,7 +175,7 @@ animate(root, "rotation_euler", [
     (97, radians((0, 0, 0))),
 ])
 hip_home = (-0.10, 0.30, -0.02)
-hip_steps = [(frame, math.sin(2 * math.pi * (frame - 1) / 24))
+hip_steps = [(frame, math.cos(2 * math.pi * (frame - 1) / 24))
              for frame in range(1, 98, 6)]
 animate(hip, "location", [
     (frame, (hip_home[0] + 0.11 * swing, hip_home[1], hip_home[2]))
@@ -184,12 +190,11 @@ speaker_hit = (-0.105, 0.728, 0.045)
 speaker_positions = []
 speaker_scales = []
 for start in range(1, 97, 12):
-    speaker_positions.extend([(start, speaker_rest), (start + 2, speaker_hit),
-                              (start + 5, speaker_rest)])
-    speaker_scales.extend([(start, (1, 1, 1)), (start + 2, (1.05, 1.05, 1.05)),
+    speaker_positions.extend([(start, speaker_hit), (start + 5, speaker_rest)])
+    speaker_scales.extend([(start, (1.05, 1.05, 1.05)),
                            (start + 5, (1, 1, 1))])
-speaker_positions.append((97, speaker_rest))
-speaker_scales.append((97, (1, 1, 1)))
+speaker_positions.append((97, speaker_hit))
+speaker_scales.append((97, (1.05, 1.05, 1.05)))
 animate(speaker, "location", speaker_positions)
 animate(speaker, "scale", speaker_scales)
 animate(left_arm, "rotation_euler", [
@@ -197,11 +202,12 @@ animate(left_arm, "rotation_euler", [
     (49, radians((0, 0, 0))), (73, radians((0, -5, 2))),
     (97, radians((0, 0, 0))),
 ])
+# Repeat the arm's high pose at both ends so it flows through the loop seam.
 animate(right_arm, "rotation_euler", [
-    (1, radians((0, 0, 0))), (17, radians((0, -12, 5))),
+    (1, radians((0, 9, -4))), (17, radians((0, -12, 5))),
     (33, radians((0, 9, -4))), (49, radians((0, -12, 5))),
     (65, radians((0, 9, -4))), (81, radians((0, -12, 5))),
-    (97, radians((0, 0, 0))),
+    (97, radians((0, 9, -4))),
 ])
 for eye, home in [(left_eye, (0.045, 0.83, -0.057)),
                   (right_eye, (-0.149, 0.913, 0.007))]:
@@ -220,10 +226,10 @@ animate(right_foot, "rotation_euler", [(1, (0, 0, 0)),
     (49, (0, 0, 0)), (73, radians((7, 0, 0))), (97, (0, 0, 0))])
 
 scene = bpy.context.scene
-scene.frame_start = 1
-scene.frame_end = 96
-scene.render.fps = 24
-scene.frame_set(1)
+scene.frame_start = 0
+scene.frame_end = dance_frame(97) - 1
+scene.render.fps = FPS
+scene.frame_set(0)
 bpy.context.view_layer.update()
 
 # Bake the editable control hierarchy into a real armature. Each glove, boot,
@@ -265,7 +271,7 @@ for name, parent_name, head, tail, _ in bone_specs:
     bone.tail = imported_axes(tail)
     if parent_name:
         bone.parent = rig_data.edit_bones[parent_name]
-        bone.use_connect = False
+        bone.use_connect = name.startswith(("forearm.", "shin.", "hand."))
 bpy.ops.object.mode_set(mode="OBJECT")
 
 
@@ -279,10 +285,11 @@ def skin_piece(obj, weights):
     if isinstance(weights, dict):
         for index, vertex in enumerate(obj.data.vertices):
             point = obj.matrix_world @ vertex.co
-            start, end = weights["segment"]
+            start, joint, end = weights["segment"]
             direction = end - start
-            along = (point - start).dot(direction) / direction.length_squared
-            blend = min(1.0, max(0.0, (along - 0.05) / 0.90))
+            # Keep the shafts solid; blend weights only around the joint.
+            along = (point - joint).dot(direction) / direction.length_squared
+            blend = min(1.0, max(0.0, 0.5 + along / 0.22))
             second = blend * blend * (3 - 2 * blend)
             first = 1.0 - second
             if first:
@@ -293,21 +300,22 @@ def skin_piece(obj, weights):
         obj.vertex_groups[weights].add(list(range(len(obj.data.vertices))), 1.0, "REPLACE")
     modifier = obj.modifiers.new("Skeleton skin", "ARMATURE")
     modifier.object = rig
+    modifier.use_deform_preserve_volume = True
     obj.parent = rig
     obj.matrix_parent_inverse = rig.matrix_world.inverted()
 
 
 segments = {
-    "arm_left": ("upper_arm.L", "forearm.L", (-0.51, 0.76, 0.12), (-0.62, 0.89, -0.08)),
-    "arm_right": ("upper_arm.R", "forearm.R", (0.30, 0.73, -0.12), (0.58, 0.83, 0.22)),
-    "leg_left": ("thigh.L", "shin.L", (-0.28, 0.31, -0.02), (-0.32, 0.13, -0.08)),
-    "leg_right": ("thigh.R", "shin.R", (0.06, 0.32, -0.07), (0.07, 0.15, 0.04)),
+    "arm_left": ("upper_arm.L", "forearm.L", (-0.51, 0.76, 0.12), (-0.62, 0.77, 0.02), (-0.62, 0.89, -0.08)),
+    "arm_right": ("upper_arm.R", "forearm.R", (0.30, 0.73, -0.12), (0.38, 0.70, 0.07), (0.58, 0.83, 0.22)),
+    "leg_left": ("thigh.L", "shin.L", (-0.28, 0.31, -0.02), (-0.31, 0.22, -0.06), (-0.32, 0.13, -0.08)),
+    "leg_right": ("thigh.R", "shin.R", (0.06, 0.32, -0.07), (0.09, 0.23, 0.00), (0.07, 0.15, 0.04)),
 }
 for name, obj in parts.items():
     if name in segments:
-        first, second, start, end = segments[name]
+        first, second, start, joint, end = segments[name]
         groups = {"first": first, "second": second,
-                  "segment": (Vector(imported_axes(start)), Vector(imported_axes(end)))}
+                  "segment": tuple(Vector(imported_axes(p)) for p in (start, joint, end))}
     elif name.startswith("glove_left"):
         groups = "hand.L"
     elif name.startswith("glove_right"):
@@ -333,7 +341,7 @@ for name, obj in parts.items():
     skin_piece(obj, groups)
 
 # Preserve the precise curve of the existing loop while making the bones the
-# sole animation source. Rest matrices keep frame 1 identical to the OBJ pose.
+# sole animation source. Rest matrices preserve the opening pose during baking.
 rest_controls = {name: control_obj.matrix_world.copy()
                  for name, _, _, _, control_obj in bone_specs}
 upper_body = {"body", "upper_arm.L", "forearm.L", "hand.L",
@@ -341,10 +349,12 @@ upper_body = {"body", "upper_arm.L", "forearm.L", "hand.L",
               "eye.L", "eye.R", "lid.L", "lid.R"}
 for pose_bone in rig.pose.bones:
     pose_bone.rotation_mode = "QUATERNION"
-for frame in range(1, 98):
+editable_joints = {"thigh.L", "shin.L", "thigh.R", "shin.R",
+                   "forearm.L", "forearm.R", "hand.L", "hand.R"}
+for frame in range(scene.frame_start, scene.frame_end + 2):
     scene.frame_set(frame)
     bpy.context.view_layer.update()
-    beat = math.sin(2 * math.pi * (frame - 1) / 24)
+    beat = math.cos(2 * math.pi * frame / (24 * FRAME_SCALE))
     hip_delta = hip.matrix_world @ rest_controls["hips"].inverted()
     speaker_delta = speaker.matrix_world @ rest_controls["speaker"].inverted()
     speaker_pulse = speaker_delta @ hip_delta.inverted()
@@ -361,23 +371,21 @@ for frame in range(1, 98):
             desired = speaker_pulse @ desired
         if name in upper_body:
             desired = body_counter @ desired
-        elif name in {"shin.L", "shin.R"}:
-            desired = hip_delta.inverted() @ desired
-        elif name in {"foot.L", "foot.R"}:
-            desired = hip_delta.inverted() @ desired
         bone.matrix = desired
         bpy.context.view_layer.update()
-        bone.keyframe_insert(data_path="location", frame=frame)
-        bone.keyframe_insert(data_path="rotation_quaternion", frame=frame)
-        bone.keyframe_insert(data_path="scale", frame=frame)
-scene.frame_set(1)
+        if name not in editable_joints:
+            bone.keyframe_insert(data_path="location", frame=frame)
+            bone.keyframe_insert(data_path="rotation_quaternion", frame=frame)
+            bone.keyframe_insert(data_path="scale", frame=frame)
+scene.frame_set(0)
 if rig.animation_data and rig.animation_data.action:
     rig.animation_data.action.name = "Irie Vibes | Hip shake and idle"
 for control_obj in (speaker, left_arm, right_arm, left_eye, right_eye,
                     left_lid, right_lid, left_foot, right_foot, hip, root):
     bpy.data.objects.remove(control_obj, do_unlink=True)
 rig.show_in_front = True
-rig_data.display_type = "STICK"
+rig_data.display_type = "OCTAHEDRAL"
+rig_data.show_names = True
 
 # Useful opening view and simple studio lights, excluded from GLB export.
 bpy.ops.object.camera_add(location=(2.0, 3.4, 1.55))
@@ -421,6 +429,7 @@ for screen in bpy.data.screens:
 bpy.ops.object.select_all(action="DESELECT")
 rig.select_set(True)
 bpy.context.view_layer.objects.active = rig
+bpy.context.preferences.filepaths.save_version = 0
 bpy.ops.wm.save_as_mainfile(filepath=str(BLEND))
 
 # Export only the animated hierarchy, omitting preview camera and lights.

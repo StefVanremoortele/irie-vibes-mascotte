@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Irie Vibes — Open Mind dance</title>
+  <style>
+    :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #121c1a; color: #f4f1e7; }
+    main { min-height: 100vh; display: grid; grid-template-rows: 1fr auto; }
+    #stage { min-height: 420px; position: relative; overflow: hidden; background: radial-gradient(circle at 50% 42%, #395648, #182925 65%, #101a18); }
+    #stage canvas { display: block; width: 100%; height: 100%; }
+    #status { position: absolute; top: 1rem; left: 1rem; margin: 0; padding: .5rem .8rem; border-radius: 999px; background: #101a18cc; font-size: .85rem; }
+    footer { padding: 1rem clamp(1rem, 4vw, 3rem) 1.4rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem 2rem; flex-wrap: wrap; }
+    h1 { font-size: 1.1rem; margin: 0 0 .2rem; }
+    p { margin: 0; color: #b9c9bf; font-size: .9rem; }
+    audio { width: min(100%, 440px); }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.1/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.1/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <main>
+    <div id="stage" aria-label="Animated Irie Vibes mascot">
+      <p id="status" role="status">Loading mascot…</p>
+    </div>
+    <footer>
+      <div>
+        <h1>Irie Vibes</h1>
+        <p>Press play for the Open Mind dance. Drag to turn the model; scroll to zoom.</p>
+      </div>
+      <audio id="music" controls preload="metadata" src="./assets/audio/openmindaudio.mp3" aria-label="Open Mind music"></audio>
+    </footer>
+  </main>
+  <script type="module" src="./main.js"></script>
+</body>
+</html>
