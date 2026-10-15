@@ -1,0 +1,49 @@
+# Exported by three-d-stage
+newmtl paint_mustard
+Kd 0.6939 0.3663 0.0319
+Ks 0.2000 0.2000 0.2000
+Ns 16
+d 1.0000
+
+newmtl ink_brown
+Kd 0.0242 0.0123 0.0075
+Ks 0.2000 0.2000 0.2000
+Ns 30
+d 1.0000
+
+newmtl wood_burnt
+Kd 0.3813 0.1144 0.0296
+Ks 0.2000 0.2000 0.2000
+Ns 16
+d 1.0000
+
+newmtl dark_brown
+Kd 0.0704 0.0284 0.0130
+Ks 0.2000 0.2000 0.2000
+Ns 16
+d 1.0000
+
+newmtl forest_green
+Kd 0.0931 0.1590 0.0497
+Ks 0.2000 0.2000 0.2000
+Ns 16
+d 1.0000
+
+newmtl cream
+Kd 0.8879 0.7758 0.5520
+Ks 0.2000 0.2000 0.2000
+Ns 16
+d 1.0000
+
+newmtl burnt_orange
+Kd 0.6240 0.1144 0.0232
+Ks 0.2000 0.2000 0.2000
+Ns 16
+d 1.0000
+
+newmtl signal_red
+Kd 0.4564 0.0319 0.0232
+Ks 0.2000 0.2000 0.2000
+Ns 40
+d 1.0000
+
