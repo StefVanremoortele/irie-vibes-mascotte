@@ -11,3 +11,4 @@ To rebuild after changing the OBJ or script:
 ```
 
 The rig has 20 bones and vertex weights on every mesh part. The curved arm and leg tubes blend across upper and lower bones; gloves, boots, facial details, and speaker components have rigid weights. The build script replaces the source limb tubes with attached curves and uses the original `.mtl` colors.
+"# irie-vibes-mascotte" 
